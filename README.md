@@ -6,6 +6,8 @@ Cette version garde le moteur de détection de la V6 et le place dans une coquil
 
 La détection automatique reconnaît aussi les cartes composées de bulles à contour, de cercles pleins et de traits. Elle identifie d'abord ces objets, puis vérifie les traits entre eux. Le mode « Réseau / plan / carte » reste disponible pour les véritables schémas à intersections.
 
+Depuis la V7.5, l'import d'une nouvelle image remet le type de dessin sur « Automatique ». Les bulles sont analysées à partir des couleurs d'origine, même si l'option de contraste est activée pour l'affichage. Le chargement en ligne récupère les fichiers les plus récents, tandis que le cache reste disponible hors ligne.
+
 ## Démarrage
 
 ```bash
