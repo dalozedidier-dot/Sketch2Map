@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<meta name="description" content="Transformez une photo de schéma manuscrit en carte interactive. 100 % local.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Sketch2Map Studio</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="brand">
+      <img class="logo" src="icons/icon.svg" alt="">
+      <div>
+        <h1>Sketch2Map <small>Studio · local · V7.2</small></h1>
+      </div>
+    </div>
+    <input class="projectTitle" id="projectTitle" value="Projet sans titre" aria-label="Nom du projet">
+    <div class="headerActions">
+      <span class="badge" id="countBadge">0 nœud · 0 relation</span>
+      <button class="btn secondary small" id="toggleSideBtn" title="Panneau">☰</button>
+      <button class="btn secondary small" id="commandBtn" title="Commandes">⌘K</button>
+      <button class="btn secondary small" id="helpBtn" title="Raccourcis">?</button>
+      <button class="btn secondary small" id="themeBtn" title="Thème">◐</button>
+      <button class="btn secondary small" id="installBtn" title="Installer l’application">Installer</button>
+      <button class="btn secondary small" id="saveBtn">Sauver</button>
+      <button class="btn secondary small" id="loadBtn">Projets</button>
+    </div>
+  </header>
+
+  <div class="workspace" id="workspace">
+    <aside class="side" id="side">
+      <div class="section">
+        <h3>1. Source</h3>
+        <div id="previewWrap">
+          <img id="preview" alt="Aperçu du schéma">
+          <div class="emptyPreview" id="emptyPreview">Déposez une photo, un JSON Sketch2Map, ou photographiez votre schéma.<br>Rien ne quitte cet appareil.</div>
+        </div>
+        <div class="row" style="margin-top:7px">
+          <label class="filebtn wide">📷 Importer / photographier<input id="file" type="file" accept="image/*,application/json,.json,.s2m.json" capture="environment"></label>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn secondary small" id="exampleBtn">Exemple</button>
+          <button class="btn secondary small" id="rotateBtn">↻ Rotation</button>
+          <button class="btn secondary small" id="contrastBtn">◐ Contraste</button>
+          <button class="btn secondary small" id="clearImageBtn">Retirer</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>2. Détection</h3>
+        <label class="hint">Type de dessin</label>
+        <select id="detectMode" class="control">
+          <option value="auto">Automatique</option>
+          <option value="organic">Mind map organique</option>
+          <option value="network">Réseau / plan / carte</option>
+          <option value="boxed">Boîtes / bulles / flèches</option>
+        </select>
+        <label class="hint">Précision d’analyse</label>
+        <select id="analysisQuality" class="control">
+          <option value="native">Source native (aucune réduction)</option>
+          <option value="auto" selected>Auto haute précision</option>
+          <option value="balanced">Équilibrée</option>
+          <option value="high">Haute</option>
+          <option value="ultra">Très haute</option>
+        </select>
+        <label class="hint">Sensibilité aux traits</label>
+        <div class="rangeRow"><input id="sensitivity" class="control" type="range" min="1" max="10" value="6"><span class="rangeVal" id="sensitivityVal">6</span></div>
+        <label class="hint">Branches fines</label>
+        <div class="rangeRow"><input id="thinBranches" class="control" type="range" min="1" max="10" value="6"><span class="rangeVal" id="thinBranchesVal">6</span></div>
+        <label class="hint">Tolérance aux coupures</label>
+        <div class="rangeRow"><input id="gapTolerance" class="control" type="range" min="1" max="10" value="5"><span class="rangeVal" id="gapToleranceVal">5</span></div>
+        <label class="hint">Séparation des couleurs</label>
+        <div class="rangeRow"><input id="colorSeparation" class="control" type="range" min="1" max="10" value="5"><span class="rangeVal" id="colorSeparationVal">5</span></div>
+        <button class="btn wide" id="analyzeBtn">Détecter / réanalyser</button>
+        <div class="status" id="status">Importez un schéma, puis lancez la détection locale.</div>
+        <div class="hint" id="resolutionInfo"></div>
+      </div>
+
+      <div class="section">
+        <h3>3. Carte</h3>
+        <div class="searchBox">
+          <input class="control" id="searchInput" type="search" placeholder="Rechercher un nœud…">
+        </div>
+        <div class="row">
+          <button class="btn secondary small" id="layoutBtn">Auto-layout</button>
+          <button class="btn secondary small" id="fitBtn">Ajuster</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>4. Export</h3>
+        <select class="btn secondary small" id="exportSelect">
+          <option value="json">JSON Sketch2Map</option>
+          <option value="svg">SVG</option>
+          <option value="png">PNG</option>
+          <option value="mm">FreeMind .mm</option>
+          <option value="md">Markdown</option>
+          <option value="mermaid">Mermaid</option>
+          <option value="opml">OPML</option>
+        </select>
+        <button class="btn secondary small" id="exportBtn">Exporter</button>
+        <p class="hint">Les exports restent sur votre machine. Aucune donnée n’est envoyée.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="toolstrip">
+        <button class="btn secondary small" id="undoBtn" title="Annuler">↶</button>
+        <button class="btn secondary small" id="redoBtn" title="Rétablir">↷</button>
+        <span class="sep"></span>
+        <button class="btn secondary small toolBtn active" data-tool="select">☝ Sélection</button>
+        <button class="btn secondary small toolBtn" data-tool="trace">✎ Suivre</button>
+        <button class="btn secondary small toolBtn" data-tool="link">↗ Relier</button>
+        <button class="btn secondary small toolBtn" data-tool="cut">✂ Couper</button>
+        <button class="btn secondary small toolBtn" data-tool="add">＋ Ajouter</button>
+        <span class="toolHint" id="toolHint">Sélectionnez un élément.</span>
+        <span class="sep"></span>
+        <div class="viewSwitch" role="group" aria-label="Disposition">
+          <button class="btn secondary small" id="viewPhotoBtn" title="Photo en grand">Photo</button>
+          <button class="btn secondary small active" id="viewSplitBtn" title="Les deux, largeur réglable">Les deux</button>
+          <button class="btn secondary small" id="viewMapBtn" title="Carte / 3D en grand">Carte</button>
+        </div>
+        <span class="mobileOnly"><button class="btn secondary small" id="mobileAnalyze">Détecter</button></span>
+      </div>
+      <div class="mobileTabs">
+        <button class="btn secondary active" id="tabPhoto">Photo</button>
+        <button class="btn secondary" id="tabMap">Carte</button>
+        <button class="btn secondary" id="tab3d">3D</button>
+      </div>
+      <div class="split" id="split">
+        <section class="pane mobileOn" id="photoPane">
+          <div class="paneHead">
+            <span>Photo interactive</span>
+            <div class="row">
+              <button class="btn secondary small" id="photoZoomOut" title="Zoom arrière">−</button>
+              <button class="btn secondary small" id="photoZoomIn" title="Zoom avant">+</button>
+              <button class="btn secondary small" id="photoFitBtn" title="Ajuster">Ajuster</button>
+              <button class="btn secondary small" id="photoMaxBtn" title="Plein cadre">⛶</button>
+              <span class="miniBadge" id="photoInfo">aucune image</span>
+            </div>
+          </div>
+          <div class="photoStage" id="photoStage">
+            <canvas id="photoCanvas"></canvas>
+            <div class="loupe" id="loupe"><canvas id="loupeCanvas" width="220" height="220"></canvas></div>
+            <div class="photoTip"><span id="photoTipText">Chargez une photo puis lancez la détection.</span></div>
+            <div class="dropOverlay" id="dropOverlay">Déposer l’image ici</div>
+          </div>
+        </section>
+        <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" title="Glisser pour régler Photo / Carte"></div>
+        <section class="pane" id="mapPane">
+          <div class="paneHead">
+            <span>Carte reconstruite</span>
+            <div class="row">
+              <button class="btn secondary small active" id="btn2d">2D</button>
+              <button class="btn secondary small" id="btn3d">3D</button>
+              <button class="btn secondary small" id="readBtn" aria-expanded="false" aria-controls="readPanel" title="Parcourir les éléments de la carte">Lecture</button>
+              <button class="btn secondary small" id="mapZoomOut" title="Réduire la carte">−</button>
+              <button class="btn secondary small" id="mapZoomIn" title="Agrandir la carte">+</button>
+              <button class="btn secondary small" id="mapFit" title="Afficher toute la carte">Ajuster</button>
+              <span class="sep"></span>
+              <button class="btn secondary small" data-layout3d="tree" id="layoutTreeBtn">Arbre</button>
+              <button class="btn secondary small" data-layout3d="relief">Relief</button>
+              <button class="btn secondary small" data-layout3d="sphere">Sphère</button>
+              <button class="btn secondary small" id="mapMaxBtn" title="Plein cadre">⛶</button>
+              <span class="miniBadge" id="selectionInfo">aucune sélection</span>
+            </div>
+          </div>
+          <div class="mapStage" id="mapStage">
+            <aside class="readPanel" id="readPanel" aria-label="Lecture de la carte" hidden>
+              <div class="readPanelHead"><strong>Parcours de la carte</strong><button class="btn secondary small" id="readClose" aria-label="Fermer la lecture">×</button></div>
+              <p class="hint" id="readSummary">Aucun élément pour le moment.</p>
+              <input class="control" id="readSearch" type="search" placeholder="Filtrer les éléments…" aria-label="Filtrer les éléments">
+              <div class="readList" id="readList"></div>
+            </aside>
+            <svg id="stage" viewBox="0 0 1200 800" aria-label="Carte éditable"></svg>
+            <canvas id="view3d" aria-label="Carte 3D interactive"></canvas>
+            <div class="inspector" id="inspector">
+              <h4 id="inspectorTitle">Élément</h4>
+              <div id="nodeFields">
+                <img class="cropPreview" id="cropPreview" alt="Extrait du schéma">
+                <label class="hint">Libellé</label>
+                <input class="control" id="labelInput" type="text">
+                <label class="hint">Notes</label>
+                <textarea class="control" id="nodeNotes" rows="3" placeholder="Contexte, citation, source…"></textarea>
+                <label class="hint">Type de nœud</label>
+                <select class="control" id="nodeType">
+                  <option>concept</option>
+                  <option>acteur</option>
+                  <option>ressource</option>
+                  <option>étape</option>
+                  <option>problème</option>
+                  <option>objectif</option>
+                </select>
+              </div>
+              <div id="edgeFields" style="display:none">
+                <label class="hint">Libellé</label>
+                <input class="control" id="edgeLabel" type="text">
+                <label class="hint">Type de relation</label>
+                <select class="control" id="edgeType">
+                  <option value="causal">causalité</option>
+                  <option value="flow">flux</option>
+                  <option value="influence">influence</option>
+                  <option value="hypothesis">hypothèse</option>
+                </select>
+                <div class="row" style="margin-top:7px"><button class="btn secondary small" id="reverseEdge">⇄ Inverser</button></div>
+              </div>
+              <div class="teachRow">
+                <button class="btn ok" id="verifyBtn">✓ Correct</button>
+                <button class="btn danger" id="rejectBtn">✕ Mauvais</button>
+                <button class="btn secondary" id="continueBtn">↗ Continuer</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <footer class="statusbar">
+    <span id="statusLeft">Prêt · 100 % local</span>
+    <span id="statusRight">Molette : zoom photo · Alt+glisser : déplacer · Glisser le séparateur : largeur</span>
+  </footer>
+</div>
+
+<canvas id="workCanvas" hidden></canvas>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <h2 id="overlayTitle">Analyse locale</h2>
+    <p class="hint" id="overlayText">Lecture des traits sur la photo originale. L’interface reste sur l’appareil.</p>
+  </div>
+</div>
+
+<div class="overlay" id="projectsOverlay">
+  <div class="modal">
+    <h2>Projets locaux</h2>
+    <p class="hint">Stockés dans IndexedDB, pas dans le cloud. Les photos trop lourdes pour localStorage passent ici.</p>
+    <div class="row">
+      <button class="btn small" id="newProjectBtn">Nouveau projet</button>
+      <button class="btn secondary small" id="closeProjectsBtn">Fermer</button>
+    </div>
+    <div class="projects" id="projectsList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="helpOverlay">
+  <div class="modal">
+    <h2>Raccourcis et méthode</h2>
+    <div class="krow"><span>Palette de commandes</span><kbd>Ctrl</kbd>+<kbd>K</kbd></div>
+    <div class="krow"><span>Enregistrer</span><kbd>Ctrl</kbd>+<kbd>S</kbd></div>
+    <div class="krow"><span>Annuler / rétablir</span><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></div>
+    <div class="krow"><span>Détecter</span><kbd>Ctrl</kbd>+<kbd>Enter</kbd></div>
+    <div class="krow"><span>Outils 1–5</span><kbd>1</kbd> sélection · <kbd>2</kbd> suivre · <kbd>3</kbd> relier · <kbd>4</kbd> couper · <kbd>5</kbd> ajouter</div>
+    <div class="krow"><span>Supprimer l’élément</span><kbd>Delete</kbd></div>
+    <div class="krow"><span>Échapper</span><kbd>Esc</kbd></div>
+    <p class="hint">Méthode pro : détecter → corriger sur la photo (Suivre / Relier / Couper) → marquer Correct pour apprendre la couleur du trait → exporter Markdown ou Mermaid vers votre outil habituel.</p>
+    <div class="row"><button class="btn secondary small" id="closeHelpBtn">Fermer</button></div>
+  </div>
+</div>
+
+<div class="command" id="commandPalette">
+  <input id="commandInput" placeholder="Rechercher une action ou un nœud…" autocomplete="off">
+  <div class="cmdList" id="commandList"></div>
+</div>
+<div class="toastWrap" id="toastWrap"></div>
+
+<script src="js/engine.js"></script>
+<script src="js/view3d.js"></script>
+<script src="js/studio.js"></script>
+<script src="js/reading.js"></script>
+<script src="js/install.js"></script>
+</body>
+</html>

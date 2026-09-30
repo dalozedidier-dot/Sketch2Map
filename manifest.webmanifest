@@ -1,0 +1,23 @@
+{
+  "name": "Sketch2Map Studio",
+  "short_name": "Sketch2Map",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "orientation": "any",
+  "description": "Transformez une photo de schéma manuscrit en carte interactive. 100 % local, sans serveur ni API IA.",
+  "lang": "fr",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": { "application/json": [".s2m.json", ".json"] }
+    }
+  ]
+}
